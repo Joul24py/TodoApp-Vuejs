@@ -1,23 +1,41 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue';
 
-const todos = ref([])
-const name = ref('')
+const todos = ref([]);
+const name = ref('');
 
-const input_content = ref('')
-const input_category =ref(null)
+const input_content = ref('');
+const input_category =ref(null);
 
 const todos_asc = computed(() => todos.value.sort((a, b) => {
-  return a.createdAt - b.createdAt
-}))
+  return b.createdAt - a.createdAt;
+}));
+
+const addTodo = () => {
+  if(input_content.value.trim() === '' || input_category.value === null){
+    return
+  }
+
+  todos.value.push({
+    content: input_content.value,
+    category: input_category.value,
+    done: false,
+    createdAt: new Date().getTime()
+  })
+}
 
 watch(name, (newVal) => {
-  localStorage.setItem('name', newVal)
-})
+  localStorage.setItem('name', newVal);
+});
+
+watch(todos, (newVal) => {
+  localStorage.setItem('todos', JSON.stringify(newVal));
+}, { deep: true });
 
 onMounted(() => {
-  name.value = localStorage.getItem('name') || ''
-})
+  name.value = localStorage.getItem('name') || '';
+  todos.value = JSON.parse(localStorage.getItem('todos')) || [];
+});
 </script>
 
 <template>
@@ -32,7 +50,35 @@ onMounted(() => {
     <section class="create-todo">
       <h3>Create a to-do</h3>
 
-      <form @submit.prevent="addTodo"></form>
+      <form @submit.prevent="addTodo">
+        <h4>What's on your to-do list?</h4>
+        <input type="text" placeholder="Example: Go to the gym" v-model="input_content">
+        
+        <h4>Pick a category</h4>
+        <div class="options">
+          <label>
+            <input 
+              type="radio"
+              name="category"
+              value="business"
+              v-model="input_category">
+            <span class="bubble business"></span>
+            <div>Business</div>
+          </label>
+
+          <label>
+            <input 
+              type="radio"
+              name="category"
+              value="personal"
+              v-model="input_category">
+            <span class="bubble personal"></span>
+            <div>Personal</div>
+          </label>
+        </div>
+
+        <input type="submit" value="Add to-do">
+      </form>
     </section>
   </main>
 
